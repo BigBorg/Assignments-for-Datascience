@@ -1,0 +1,7 @@
+The final outputdata.txt should be readed using read.tabel or read.csv with settings header=TRUE and sep=" ".
+The data frame contains 180 objects and 68 varibales.
+
+Variable subject represent the id of volunteers and Y represents the activity being measured on.
+
+The left 66 varibales are selected means and standard deviation of each measurement. You can find description
+of each variable in features_info.txt

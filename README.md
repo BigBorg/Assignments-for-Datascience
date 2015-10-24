@@ -1,2 +1,1 @@
-# mooc-datascientist
-This is a repo for datascientist specification courses. 
+#Assignments for Coursera Datascience Specialization Courses
