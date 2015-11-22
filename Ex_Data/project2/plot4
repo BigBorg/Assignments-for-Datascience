@@ -1,0 +1,24 @@
+if(!file.exists("projects")){
+	dir.create("project2");
+	setwd("./project2");
+	download.files("https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip",destfile="Data.zip");
+	unzip("Data.zip");
+}
+
+NEI <- readRDS("summarySCC_PM25.rds");
+SCC <- readRDS("Source_Classification_Code.rds");
+
+library(dplyr);
+library(ggplot2);
+
+#question 4/plot 4: Decreasing
+png("plot4.png");
+coal<-grep("^Fuel (.*) Coal",SCC$EI.Sector);
+filt<-SCC[coal,1];
+coalData<-filter(NEI,SCC %in% filt);
+groupedcoalData<-group_by(coalData,year);
+sumcoal<-summarize(groupedcoalData,Emissions=sum(Emissions));
+q<-ggplot(data=sumcoal,aes(year,Emissions)) + geom_point() + geom_line() +geom_smooth(method="lm") + labs(x="year",y="Total Emissions") + labs(title="Emission Trend(coal,US)");
+print(q);
+dev.off();
+

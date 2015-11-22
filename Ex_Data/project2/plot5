@@ -1,0 +1,22 @@
+if(!file.exists("projects")){
+	dir.create("project2");
+	setwd("./project2");
+	download.files("https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip",destfile="Data.zip");
+	unzip("Data.zip");
+}
+
+NEI <- readRDS("summarySCC_PM25.rds");
+SCC <- readRDS("Source_Classification_Code.rds");
+
+library(dplyr);
+library(ggplot2);
+
+#question 5/plot 5: Decreasing
+png("plot5.png");
+baltimore<-filter(groupedNEI,fips=="24510");	##This line of code might take some time, please be patient...
+motorbal<-filter(baltimore,type=="ON-ROAD");
+groupedmotorbal<-group_by(motorbal,year);
+summotorbal<-summarize(groupedmotorbal,Emissions=sum(Emissions));
+q<-ggplot(data = summotorbal,aes(year,Emissions)) + geom_point() + geom_line() + geom_smooth(method="lm") + labs(title="Emission Trend(motor vehicle,Baltimore)");
+print(q);
+dev.off();

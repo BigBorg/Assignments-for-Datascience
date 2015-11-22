@@ -1,0 +1,19 @@
+if(!file.exists("projects")){
+	dir.create("project2");
+	setwd("./project2");
+	download.files("https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip",destfile="Data.zip");
+	unzip("Data.zip");
+}
+
+NEI <- readRDS("summarySCC_PM25.rds");
+SCC <- readRDS("Source_Classification_Code.rds");
+
+library(dplyr);
+library(ggplot2);
+
+#question 3/plot 3: Emission of type "POINT" is increasing, other types decreasing.
+png("plot3.png");
+baltimore<-filter(groupedNEI,fips=="24510");	##This line of code might take some time, please be patient...
+sumbaltype<-summarize(group_by(baltimore,year,type),Emissions=sum(Emissions));
+xyplot(Emissions~year|type,data = sumbaltype,main="Emission Trend(type,Baltimore)",panel=function(x,y,...){panel.xyplot(x,y,...);panel.lmline(x,y);});
+dev.off();
