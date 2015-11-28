@@ -1,7 +1,7 @@
 if(!file.exists("projects")){
 	dir.create("project2");
 	setwd("./project2");
-	download.files("https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip",destfile="Data.zip");
+	download.file("https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip",destfile="Data.zip");
 	unzip("Data.zip");
 }
 
@@ -28,7 +28,9 @@ dev.off();
 #question 3/plot 3: Emission of type "POINT" is increasing, other types decreasing.
 png("plot3.png");
 sumbaltype<-summarize(group_by(baltimore,year,type),Emissions=sum(Emissions));
-xyplot(Emissions~year|type,data = sumbaltype,main="Emission Trend(type,Baltimore)",panel=function(x,y,...){panel.xyplot(x,y,...);panel.lmline(x,y);});
+p<-ggplot(sumbaltype,aes(year,Emissions));
+p<-p+facet_grid(.~type) + labs(title="Emission Trend(type,Baltimore)") + geom_point() + geom_smooth(method="lm");
+print(p);
 dev.off();
 
 #question 4/plot 4: Decreasing
