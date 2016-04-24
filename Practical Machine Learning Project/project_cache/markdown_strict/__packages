@@ -1,0 +1,8 @@
+base
+rmarkdown
+dplyr
+lattice
+ggplot2
+caret
+rpart
+MASS

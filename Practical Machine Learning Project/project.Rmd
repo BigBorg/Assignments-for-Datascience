@@ -71,7 +71,8 @@ On training data, lda model is the best fit. Combining lda and rpart model with 
 # Plot lda_est against classe
 ```{r}
 qplot(x=training_feature$classe,y=lda_est)+geom_jitter()
-```
+```  
+As shown in the plot, the model's performance is rather good. Density of points around the diagnoal(classe==lda_est) is higher.
 
 # Using lda Model to Predict
 ```{r}
