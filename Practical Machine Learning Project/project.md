@@ -121,7 +121,7 @@ Plot lda\_est against classe
 
     qplot(x=training_feature$classe,y=lda_est)+geom_jitter()
 
-![](project_files/figure-markdown_strict/unnamed-chunk-7-1.png)<!-- -->
+![](project_files/figure-markdown_strict/unnamed-chunk-7-1.png)  
 As shown in the plot, the model's performance is rather good. Density of
 points around the diagnoal(classe==lda\_est) is higher.
 
