@@ -39,7 +39,7 @@ training_feature <- training[,c(features,"classe")]
 summary(training_feature$classe)
 baseline <- summary(training_feature$classe)[1]/nrow(training_feature)
 ```
-Our traning data contains 5 classes. Our model accuracy should be larger than `r baseline`, which is accuracy of predictiong the majority class all the time.
+Our traning data contains 5 classes. Our model accuracy should be larger than `r baseline`, which is accuracy of predicting the majority class all the time.
 
 # Train Models Using Cross Validation
 Train lda and rpart model.

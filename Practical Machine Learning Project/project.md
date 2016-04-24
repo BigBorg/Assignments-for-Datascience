@@ -60,7 +60,7 @@ Exploratory Data Analysis & Base-line Accuracy
     baseline <- summary(training_feature$classe)[1]/nrow(training_feature)
 
 Our traning data contains 5 classes. Our model accuracy should be larger
-than 0.2843747, which is accuracy of predictiong the majority class all
+than 0.2843747, which is accuracy of predicting the majority class all
 the time.
 
 Train Models Using Cross Validation
