@@ -6,3 +6,10 @@ ggplot2
 caret
 rpart
 MASS
+survival
+gbm
+plyr
+randomForest
+rpart.plot
+knitr
+markdown

@@ -8,8 +8,8 @@ output: html_document
 Use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict which activity they were performing. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. 
 
 # Data  
-The training data for this project are available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)  
-The test data are available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)  
+The training data for this project is available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)  
+The test data is available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)  
 The data for this project come from this source: <http://groupware.les.inf.puc-rio.br/har>.   
 More information is available from the website here: [Human Activity Recognition](http://groupware.les.inf.puc-rio.br/har) (see the section on the Weight Lifting Exercise Dataset). 
 
@@ -42,42 +42,59 @@ baseline <- summary(training_feature$classe)[1]/nrow(training_feature)
 Our traning data contains 5 classes. Our model accuracy should be larger than `r baseline`, which is accuracy of predicting the majority class all the time.
 
 # Train Models Using Cross Validation
-Train lda and rpart model.
+Train gbm and rf model.
 ```{r cache=TRUE,results='hide'}
 set.seed(123)
+inTrain <- createDataPartition(training_feature$classe,p=0.8,list = FALSE)
+train <- training_feature[inTrain,]
+validation <- training_feature[-inTrain,]
 tc <- trainControl("cv",10)
-ldamodel <- train(classe~.,method="lda",trControl=tc,data=training_feature)
-rpartmodel <- train(classe~.,method="rpart",trControl=tc,data=training_feature)
+if(file.exists("gbmmodel.rd")){
+  readRDS("gbmmodel.rd")
+}else{
+  gbmmodel <- train(classe~.,method="gbm",trControl=tc,data=train)
+}
+if(file.exists("rfmodel.rd")){
+  readRDS("rfmodel.rd")
+}else{
+  rfmodel <- train(classe~.,method="rf",trControl=tc,data=train)
+}
 ```
 
-Stack three models together.
+Combine two models with rf model.
 ```{r cache=TRUE,results='hide'}
-lda_est <- predict(ldamodel,training_feature)
-rpart_est <- predict(rpartmodel,training_feature)
-ests <- data.frame(lda_est=lda_est,rpart_est=rpart_est,classe=training_feature$classe)
-combine_model <- train(classe~.,method="rpart",data=ests)
+gbm_est <- predict(gbmmodel,train)
+rf_est <- predict(rfmodel,train)
+if(file.exists("combinemodel.rd")){
+  readRDS("combinemodel.rd")
+}else{
+  ests <- data.frame(gbm_est=gbm_est,rf_est=rf_est,classe=train$classe)
+  combine_model <- train(classe~.,method="rf",data=ests)
+}
 ```
 
 # Model Evaluation
-Evaluation on training data. Since my laptop is rusty, I am not running gbm or rf model.  
+Evaluation on validation data.
 ```{r}
+gbm_est <- predict(gbmmodel,validation)
+rf_est <- predict(rfmodel,validation)
+ests <- data.frame(gbm_est=gbm_est,rf_est=rf_est)
 combine_est <- predict(combine_model,ests)
-confusionMatrix(lda_est,training_feature$classe)$overall["Accuracy"]
-confusionMatrix(rpart_est,training_feature$classe)$overall["Accuracy"]
-confusionMatrix(combine_est,training_feature$classe)$overall["Accuracy"]
+confusionMatrix(gbm_est,validation$classe)$overall["Accuracy"]
+confusionMatrix(rf_est,validation$classe)$overall["Accuracy"]
+confusionMatrix(combine_est,validation$classe)$overall["Accuracy"]
 ```  
-On training data, lda model is the best fit. Combining lda and rpart model with rpart model reduce accuracy compared with lda only. Thus we'll be using lda as the final model.
+On validation data, combined model performs equally well as rf model. Choose rf model for the convenience of data preprocessing.
 
-# Plot lda_est against classe
+# Variable Importance
 ```{r}
-qplot(x=training_feature$classe,y=lda_est)+geom_jitter()
+varImp(rfmodel$finalModel)
 ```  
-As shown in the plot, the model's performance is rather good. Density of points around the diagnoal(classe==lda_est) is higher.
+Belt matters most!
 
-# Using lda Model to Predict
+# Using rf Model to Predict
 ```{r}
-testing_feature <- testing[,c(features)]
-lda_est_test <- predict(ldamodel,testing_feature)
-lda_est_test
-summary(lda_est_test)
+test <- testing[,c(features)]
+est_rf_test <- predict(rfmodel,test)
+summary(est_rf_test)
 ```  

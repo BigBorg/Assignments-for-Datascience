@@ -9,11 +9,11 @@ ways.
 Data
 ====
 
-The training data for this project are available
+The training data for this project is available
 [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)  
-The test data are available
+The test data is available
 [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)  
-The data for this project come from this source:
+The data for this project comes from this source:
 <http://groupware.les.inf.puc-rio.br/har>.  
 More information is available from the website here: [Human Activity
 Recognition](http://groupware.les.inf.puc-rio.br/har) (see the section
@@ -66,76 +66,125 @@ the time.
 Train Models Using Cross Validation
 ===================================
 
-Train lda and rpart model.
+Train gbm and rf model.
 
     set.seed(123)
+    inTrain <- createDataPartition(training_feature$classe,p=0.8,list = FALSE)
+    train <- training_feature[inTrain,]
+    validation <- training_feature[-inTrain,]
     tc <- trainControl("cv",10)
-    ldamodel <- train(classe~.,method="lda",trControl=tc,data=training_feature)
+    if(file.exists("gbmmodel.rd")){
+      readRDS("gbmmodel.rd")
+    }else{
+      gbmmodel <- train(classe~.,method="gbm",trControl=tc,data=train)
+    }
+    if(file.exists("rfmodel.rd")){
+      readRDS("rfmodel.rd")
+    }else{
+      rfmodel <- train(classe~.,method="rf",trControl=tc,data=train)
+    }
 
-    ## Loading required package: MASS
+Combine two models with rf model.
 
-    ## 
-    ## Attaching package: 'MASS'
-
-    ## The following object is masked from 'package:dplyr':
-    ## 
-    ##     select
-
-    rpartmodel <- train(classe~.,method="rpart",trControl=tc,data=training_feature)
-
-Stack three models together.
-
-    lda_est <- predict(ldamodel,training_feature)
-    rpart_est <- predict(rpartmodel,training_feature)
-    ests <- data.frame(lda_est=lda_est,rpart_est=rpart_est,classe=training_feature$classe)
-    combine_model <- train(classe~.,method="rpart",data=ests)
+    gbm_est <- predict(gbmmodel,train)
+    rf_est <- predict(rfmodel,train)
+    if(file.exists("combinemodel.rd")){
+      readRDS("combinemodel.rd")
+    }else{
+      ests <- data.frame(gbm_est=gbm_est,rf_est=rf_est,classe=train$classe)
+      combine_model <- train(classe~.,method="rf",data=ests)
+    }
 
 Model Evaluation
 ================
 
-Evaluation on training data. Since my laptop is rusty, I am not running
-gbm or rf model.
+Evaluation on validation data.
 
+    gbm_est <- predict(gbmmodel,validation)
+    rf_est <- predict(rfmodel,validation)
+    ests <- data.frame(gbm_est=gbm_est,rf_est=rf_est)
     combine_est <- predict(combine_model,ests)
-    confusionMatrix(lda_est,training_feature$classe)$overall["Accuracy"]
+    confusionMatrix(gbm_est,validation$classe)$overall["Accuracy"]
 
     ##  Accuracy 
-    ## 0.6959535
+    ## 0.9638032
 
-    confusionMatrix(rpart_est,training_feature$classe)$overall["Accuracy"]
+    confusionMatrix(rf_est,validation$classe)$overall["Accuracy"]
 
-    ##  Accuracy 
-    ## 0.4955662
+    ## Accuracy 
+    ## 0.994392
 
-    confusionMatrix(combine_est,training_feature$classe)$overall["Accuracy"]
+    confusionMatrix(combine_est,validation$classe)$overall["Accuracy"]
 
-    ##  Accuracy 
-    ## 0.6027418
+    ## Accuracy 
+    ## 0.994392
 
-On training data, lda model is the best fit. Combining lda and rpart
-model with rpart model reduce accuracy compared with lda only. Thus
-we'll be using lda as the final model.
+On validation data, combined model performs equally well as rf model.
+Choose rf model for the convenience of data preprocessing.
 
-Plot lda\_est against classe
-============================
+Variable Importance
+===================
 
-    qplot(x=training_feature$classe,y=lda_est)+geom_jitter()
+    varImp(rfmodel$finalModel)
 
-![](project_files/figure-markdown_strict/unnamed-chunk-7-1.png)  
-As shown in the plot, the model's performance is rather good. Density of
-points around the diagnoal(classe==lda\_est) is higher.
+    ##                    Overall
+    ## roll_belt         643.1432
+    ## pitch_belt        420.7276
+    ## yaw_belt          517.2509
+    ## gyros_belt_x      147.5908
+    ## gyros_belt_y      146.3473
+    ## gyros_belt_z      255.8693
+    ## accel_belt_x      169.8875
+    ## accel_belt_y      160.0943
+    ## accel_belt_z      326.7118
+    ## magnet_belt_x     227.0831
+    ## magnet_belt_y     317.5985
+    ## magnet_belt_z     334.2471
+    ## roll_arm          278.0508
+    ## pitch_arm         198.0575
+    ## yaw_arm           223.5487
+    ## gyros_arm_x       184.8183
+    ## gyros_arm_y       176.8710
+    ## gyros_arm_z       103.8034
+    ## accel_arm_x       250.3441
+    ## accel_arm_y       192.4414
+    ## accel_arm_z       179.9224
+    ## magnet_arm_x      242.8204
+    ## magnet_arm_y      249.7541
+    ## magnet_arm_z      198.6414
+    ## roll_dumbbell     322.3415
+    ## pitch_dumbbell    212.0130
+    ## yaw_dumbbell      252.6936
+    ## gyros_dumbbell_x  157.7407
+    ## gyros_dumbbell_y  251.7384
+    ## gyros_dumbbell_z  120.5823
+    ## accel_dumbbell_x  256.4273
+    ## accel_dumbbell_y  350.9134
+    ## accel_dumbbell_z  308.1369
+    ## magnet_dumbbell_x 370.6638
+    ## magnet_dumbbell_y 419.8749
+    ## magnet_dumbbell_z 448.1362
+    ## roll_forearm      364.8781
+    ## pitch_forearm     443.4977
+    ## yaw_forearm       188.9111
+    ## gyros_forearm_x   124.6428
+    ## gyros_forearm_y   164.3684
+    ## gyros_forearm_z   122.4945
+    ## accel_forearm_x   266.6877
+    ## accel_forearm_y   183.4110
+    ## accel_forearm_z   223.6186
+    ## magnet_forearm_x  226.1433
+    ## magnet_forearm_y  235.8194
+    ## magnet_forearm_z  239.6934
 
-Using lda Model to Predict
-==========================
+Belt matters most!
 
-    testing_feature <- testing[,c(features)]
-    lda_est_test <- predict(ldamodel,testing_feature)
-    lda_est_test
+Using rf Model to Predict
+=========================
 
-    ##  [1] D A B C C C D D A A D A E A E A A B B B
-    ## Levels: A B C D E
-
-    summary(lda_est_test)
+    test <- testing[,c(features)]
+    est_rf_test <- predict(rfmodel,test)
+    summary(est_rf_test)
 
     ## A B C D E 
-    ## 7 4 3 4 2
+    ## 7 8 1 1 3
