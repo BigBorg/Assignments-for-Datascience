@@ -10,7 +10,7 @@ Use data from accelerometers on the belt, forearm, arm, and dumbell of 6 partici
 # Data  
 The training data for this project is available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)  
 The test data is available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)  
-The data for this project come from this source: <http://groupware.les.inf.puc-rio.br/har>.   
+The data for this project comes from the source: <http://groupware.les.inf.puc-rio.br/har>.   
 More information is available from the website here: [Human Activity Recognition](http://groupware.les.inf.puc-rio.br/har) (see the section on the Weight Lifting Exercise Dataset). 
 
 # Loading Data and Library

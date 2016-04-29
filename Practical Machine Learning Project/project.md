@@ -13,7 +13,7 @@ The training data for this project is available
 [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)  
 The test data is available
 [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)  
-The data for this project comes from this source:
+The data for this project comes from the source:
 <http://groupware.les.inf.puc-rio.br/har>.  
 More information is available from the website here: [Human Activity
 Recognition](http://groupware.les.inf.puc-rio.br/har) (see the section
