@@ -8,9 +8,9 @@ output: html_document
 Use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict which activity they were performing. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. 
 
 # Data  
-The training data for this project is available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)  
-The test data is available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)  
-The data for this project comes from the source: <http://groupware.les.inf.puc-rio.br/har>.   
+Training data for this project is available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)  
+Test data is available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)  
+Data for this project comes from the source: <http://groupware.les.inf.puc-rio.br/har>.   
 More information is available from the website here: [Human Activity Recognition](http://groupware.les.inf.puc-rio.br/har) (see the section on the Weight Lifting Exercise Dataset). 
 
 # Loading Data and Library
@@ -19,6 +19,8 @@ Download traning data and testing data into working directory and load data.
 library(dplyr)
 library(caret)
 library(rpart)
+library(randomForest)
+library(gbm)
 training <- read.csv("pml-training.csv")
 testing <- read.csv("pml-testing.csv")
 dim(training)
@@ -43,39 +45,43 @@ Our traning data contains 5 classes. Our model accuracy should be larger than `r
 
 # Train Models Using Cross Validation
 Train gbm and rf model.
-```{r cache=TRUE,results='hide'}
+```{r results='hide',cache=TRUE}
 set.seed(123)
 inTrain <- createDataPartition(training_feature$classe,p=0.8,list = FALSE)
 train <- training_feature[inTrain,]
 validation <- training_feature[-inTrain,]
 tc <- trainControl("cv",10)
-if(file.exists("gbmmodel.rd")){
-  readRDS("gbmmodel.rd")
+if(file.exists("gbmmodel.rds")){
+  gbmmodel <- readRDS("gbmmodel.rds")
 }else{
   gbmmodel <- train(classe~.,method="gbm",trControl=tc,data=train)
+  saveRDS(gbmmodel,"gbmmodel.rds")
 }
-if(file.exists("rfmodel.rd")){
-  readRDS("rfmodel.rd")
+if(file.exists("rfmodel.rds")){
+  rfmodel <- readRDS("rfmodel.rds")
 }else{
   rfmodel <- train(classe~.,method="rf",trControl=tc,data=train)
+  saveRDS(rfmodel,"rfmodel.rds")
 }
 ```
 
-Combine two models with rf model.
-```{r cache=TRUE,results='hide'}
+Combine two models to train combine_model.
+```{r results='hide',cache=TRUE}
 gbm_est <- predict(gbmmodel,train)
 rf_est <- predict(rfmodel,train)
-if(file.exists("combinemodel.rd")){
-  readRDS("combinemodel.rd")
+if(file.exists("combine_model.rds")){
+  combine_model <- readRDS("combine_model.rds")
 }else{
   ests <- data.frame(gbm_est=gbm_est,rf_est=rf_est,classe=train$classe)
   combine_model <- train(classe~.,method="rf",data=ests)
+  saveRDS(combine_model,"combine_model.rds")
 }
 ```
 
 # Model Evaluation
 Evaluation on validation data.
 ```{r}
+summary(validation)
 gbm_est <- predict(gbmmodel,validation)
 rf_est <- predict(rfmodel,validation)
 ests <- data.frame(gbm_est=gbm_est,rf_est=rf_est)

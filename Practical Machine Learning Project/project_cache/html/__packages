@@ -5,3 +5,7 @@ ggplot2
 caret
 rpart
 MASS
+randomForest
+survival
+gbm
+plyr
